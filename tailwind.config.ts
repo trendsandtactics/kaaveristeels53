@@ -9,9 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "#0F172A",
+        foreground: "#f8fafc", // text-white/90 roughly
+        primary: "#0F172A",
+        accent: {
+          orange: "#FF6B00",
+          grey: "#94A3B8",
+          blue: "#1E293B"
+        }
       },
+      fontFamily: {
+        heading: ["var(--font-playfair)", "serif"],
+        body: ["var(--font-inter)", "sans-serif"],
+      }
     },
   },
   plugins: [],
