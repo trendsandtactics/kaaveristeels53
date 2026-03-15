@@ -22,7 +22,7 @@ export default function GreenSteel() {
                         {/* Ministry of Steel Logo */}
                         <div className="relative w-24 h-16 md:w-32 md:h-20">
                             <Image
-                                src="/image/Ministry_of_Steel_India.svg"
+                                src="/Green.jpg"
                                 alt="Ministry of Steel India"
                                 fill
                                 className="object-contain"
