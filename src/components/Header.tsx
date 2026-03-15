@@ -18,6 +18,9 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.location.pathname === "/") {
@@ -39,9 +42,6 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
-
   const isHeroSection = isHomePage && !scrolled;
   const headerBg = isHeroSection
     ? "bg-transparent py-6"
@@ -58,9 +58,13 @@ export default function Header() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/logo.png"
+            src={isHeroSection ? "/logo.png" : "/logo3.png"}
             alt="Kaaveri TMT Bars & Structural"
-            className="h-8 md:h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+            className={`h-8 md:h-12 w-auto object-contain transition-all duration-500 ${
+              isHeroSection
+                ? "drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                : ""
+            }`}
           />
         </Link>
 
