@@ -20,10 +20,10 @@ export default function SteelScroll() {
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/80 z-[1]" />
 
-      {/* Bottom Right Content */}
-      <div className="absolute inset-0 z-10 flex flex-col items-end justify-end text-right px-8 md:px-16 pb-20">
+      {/* Bottom Left Content */}
+      <div className="absolute inset-0 z-10 flex flex-col items-start justify-end text-left px-8 md:px-16 pb-20">
 
-        <h2 className="font-heading text-4xl md:text-7xl text-white font-bold leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
+        <h2 className="font-heading text-4xl md:text-7xl text-white font-bold leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] max-w-xl">
           Building India&apos;s Future.
         </h2>
 
