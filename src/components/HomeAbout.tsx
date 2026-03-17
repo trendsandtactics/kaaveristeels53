@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function HomeAbout() {
+  const [playVideo, setPlayVideo] = useState(false);
+
   return (
     <section className="relative w-full py-16 px-6 md:px-12 overflow-hidden">
       
@@ -27,19 +29,22 @@ export default function HomeAbout() {
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: false }}
+          viewport={{ once: true, amount: 0.3 }}
+          onViewportEnter={() => setPlayVideo(true)}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="w-full md:w-1/2 relative"
         >
           <div className="relative w-full pb-[65%] bg-black rounded-sm overflow-hidden shadow-2xl">
 
+          {playVideo && (
             <iframe
-              src="https://www.youtube.com/embed/OFUDOvewAG8?autoplay=1&mute=0&controls=0&loop=1&playlist=OFUDOvewAG8&rel=0"
+              src="https://www.youtube.com/embed/OFUDOvewAG8?autoplay=1&mute=0&controls=0&rel=0"
               title="KAAVERI TMT Video"
               allow="autoplay; encrypted-media"
               allowFullScreen
               className="absolute top-0 left-0 w-full h-full object-contain"
             />
+          )}
 
             <div className="absolute inset-0 border-8 border-white/20 pointer-events-none z-20" />
 

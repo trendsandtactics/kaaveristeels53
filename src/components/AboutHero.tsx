@@ -17,8 +17,7 @@ export default function AboutHero() {
             ([entry]) => {
                 if (entry.isIntersecting) {
                     video.play().catch(() => {});
-                } else {
-                    video.pause();
+                            observer.disconnect();
                 }
             },
             {
@@ -30,7 +29,6 @@ export default function AboutHero() {
 
         return () => {
             observer.disconnect();
-            video.pause();
         };
     }, []);
 
