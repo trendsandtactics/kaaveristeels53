@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Building2, Factory } from "lucide-react";
 
 const locations = [
@@ -41,6 +41,19 @@ const locations = [
 ];
 
 export default function MapEmbed() {
+  const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTab((prev) => (prev + 1) % locations.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const activeLocation = locations[activeTab];
+  const Icon = activeLocation.icon;
+
   return (
     <section className="relative w-full py-20 md:py-28 px-6 md:px-12 bg-gradient-to-b from-white to-[#f8f8f8] overflow-hidden">
       <div className="max-w-7xl mx-auto">
@@ -50,7 +63,7 @@ export default function MapEmbed() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="max-w-3xl mx-auto text-center mb-14 md:mb-20"
+          className="max-w-3xl mx-auto text-center mb-12 md:mb-16"
         >
           <p className="text-sm md:text-base uppercase tracking-[0.28em] text-accent-red font-semibold">
             Our Locations
@@ -65,73 +78,93 @@ export default function MapEmbed() {
           </p>
         </motion.div>
 
-        {/* Cards */}
-        <div className="space-y-10 md:space-y-14">
-          {locations.map((loc, index) => {
-            const Icon = loc.icon;
-            const isReverse = index % 2 !== 0;
+        {/* Tabs */}
+        <div className="flex flex-wrap justify-center gap-3 mb-10 md:mb-12">
+          {locations.map((loc, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveTab(index)}
+              className={`relative px-5 md:px-7 py-3 rounded-full text-sm md:text-base font-semibold transition-all duration-300 border ${
+                activeTab === index
+                  ? "bg-accent-red text-white border-accent-red shadow-lg"
+                  : "bg-white text-black/70 border-black/10 hover:border-accent-red/40 hover:text-accent-red"
+              }`}
+            >
+              {loc.title}
+            </button>
+          ))}
+        </div>
 
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 36 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-                className={`group grid grid-cols-1 lg:grid-cols-2 overflow-hidden rounded-[28px] border border-black/10 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] ${
-                  isReverse ? "lg:[&>*:first-child]:order-2" : ""
-                }`}
-              >
-                {/* Content */}
-                <div className="relative flex flex-col justify-center p-8 md:p-12 lg:p-14 bg-white">
-                  <div className="inline-flex items-center gap-3 mb-5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-red/10 text-accent-red">
-                      <Icon size={22} />
-                    </div>
-                    <span className="rounded-full bg-black/5 px-4 py-2 text-xs md:text-sm font-semibold uppercase tracking-[0.2em] text-black/60">
-                      {loc.label}
-                    </span>
+        {/* Progress line */}
+        <div className="w-full max-w-md mx-auto h-1 bg-black/10 rounded-full overflow-hidden mb-10">
+          <motion.div
+            key={activeTab}
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 4, ease: "linear" }}
+            className="h-full bg-accent-yellow rounded-full"
+          />
+        </div>
+
+        {/* Active Tab Content */}
+        <div className="relative overflow-hidden rounded-[28px] border border-black/10 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 80 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -80 }}
+              transition={{ duration: 0.55, ease: "easeInOut" }}
+              className="grid grid-cols-1 lg:grid-cols-2"
+            >
+              {/* Content */}
+              <div className="relative flex flex-col justify-center p-8 md:p-12 lg:p-14 bg-white">
+                <div className="inline-flex items-center gap-3 mb-5">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-red/10 text-accent-red">
+                    <Icon size={22} />
                   </div>
-
-                  <h3 className="text-3xl md:text-4xl font-heading font-bold text-black mb-6">
-                    {loc.title}
-                  </h3>
-
-                  <div className="space-y-3 text-black/70 text-lg leading-relaxed">
-                    {loc.address.map((line, i) => (
-                      <p key={i}>{line}</p>
-                    ))}
-                  </div>
-
-                  <div className="mt-8 flex items-center gap-3 text-accent-red font-semibold">
-                    <MapPin size={18} />
-                    <span className="text-sm md:text-base">
-                      Find us on Google Maps
-                    </span>
-                  </div>
-
-                  <div className="mt-8 h-[3px] w-24 rounded-full bg-accent-yellow" />
+                  <span className="rounded-full bg-black/5 px-4 py-2 text-xs md:text-sm font-semibold uppercase tracking-[0.2em] text-black/60">
+                    {activeLocation.label}
+                  </span>
                 </div>
 
-                {/* Map */}
-                <div className="relative min-h-[320px] md:min-h-[420px] bg-[#f3f3f3]">
-                  <div className="absolute inset-0">
-                    <iframe
-                      src={loc.map}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      className="h-full w-full"
-                    />
-                  </div>
+                <h3 className="text-3xl md:text-4xl font-heading font-bold text-black mb-6">
+                  {activeLocation.title}
+                </h3>
 
-                  <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/8" />
+                <div className="space-y-3 text-black/70 text-lg leading-relaxed">
+                  {activeLocation.address.map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
                 </div>
-              </motion.div>
-            );
-          })}
+
+                <div className="mt-8 flex items-center gap-3 text-accent-red font-semibold">
+                  <MapPin size={18} />
+                  <span className="text-sm md:text-base">
+                    Find us on Google Maps
+                  </span>
+                </div>
+
+                <div className="mt-8 h-[3px] w-24 rounded-full bg-accent-yellow" />
+              </div>
+
+              {/* Map */}
+              <div className="relative min-h-[320px] md:min-h-[420px] bg-[#f3f3f3]">
+                <div className="absolute inset-0">
+                  <iframe
+                    src={activeLocation.map}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="h-full w-full"
+                  />
+                </div>
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/8" />
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
