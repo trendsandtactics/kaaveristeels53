@@ -17,7 +17,7 @@ export default function SteelScroll() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 4000);
+    }, 7000);
 
     return () => clearInterval(interval);
   }, [images.length]);
