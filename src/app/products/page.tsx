@@ -1,6 +1,6 @@
 import React from "react";
-import { getProductCategories, getProducts, getProductsPageContent } from "../../utils/pocketbase";
-import ProductsClient from "../../components/ProductsClient";
+import { getProductCategories, getProducts, getProductsPageContent } from "@/components/pocketbase";
+import ProductsClient from "@/components/ProductsClient";
 
 // Generate Dynamic Metadata from PocketBase
 export async function generateMetadata() {

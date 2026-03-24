@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import { Product, ProductCategory, PageContent } from '../types/pocketbase';
+import { Product, ProductCategory, PageContent } from '@/types/pocketbase';
 
 // Initialize PocketBase (replace with your actual PocketBase URL)
 export const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
