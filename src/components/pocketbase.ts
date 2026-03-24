@@ -1,5 +1,38 @@
 import PocketBase from 'pocketbase';
-import { Product, ProductCategory, PageContent } from '@/types/pocketbase';
+
+export interface ProductCategory {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    image: string;
+    order: number;
+    isActive: boolean;
+}
+
+export interface Product {
+    id: string;
+    title: string;
+    slug: string;
+    category: string; // ID of the relation
+    subcategory: string;
+    shortDescription: string;
+    image: string;
+    sizes: string[];
+    grades: string[];
+    applications: string[];
+    features: string[];
+    isFeatured: boolean;
+    isActive: boolean;
+    expand?: {
+        category?: ProductCategory;
+    };
+}
+
+export interface PageContent {
+    seoTitle: string;
+    seoDescription: string;
+}
 
 // Initialize PocketBase (replace with your actual PocketBase URL)
 export const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
