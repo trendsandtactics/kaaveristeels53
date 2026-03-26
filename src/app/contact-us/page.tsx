@@ -4,6 +4,18 @@ import { redirect } from "next/navigation";
 import { logout } from "./actions";
 import pool from "../contact-us/db";
 
+type QuoteRequest = {
+    id: number;
+    name: string;
+    company?: string;
+    email: string;
+    phone: string;
+    product_type: string;
+    quantity: string;
+    location?: string;
+    notes?: string;
+};
+
 export const dynamic = 'force-dynamic'; // Ensures this page isn't statically cached
 
 export const metadata = {
@@ -18,11 +30,11 @@ export default async function AdminDashboard() {
     }
 
     // 2. Fetch submissions from the database
-    let requests: any[] = [];
+    let requests: QuoteRequest[] = [];
     try {
         // Using `ORDER BY id DESC` if you have an auto-incrementing ID to show newest first.
         const [rows] = await pool.query('SELECT * FROM quote_requests ORDER BY id DESC LIMIT 100');
-        requests = rows as any[];
+        requests = rows as QuoteRequest[];
     } catch (err) {
         console.error("Failed to fetch requests:", err);
     }
