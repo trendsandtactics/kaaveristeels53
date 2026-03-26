@@ -1,6 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { logout } from "./actions";
 import pool from "../contact-us/db";
 
@@ -22,18 +23,27 @@ export const metadata = {
     title: "Dashboard | KAAVERI TMT",
 };
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({ searchParams }: { searchParams: { page?: string } }) {
     // 1. Verify authentication
     const session = cookies().get('admin_session');
     if (!session || session.value !== 'authenticated') {
         redirect('/admin/login');
     }
 
-    // 2. Fetch submissions from the database
+    // 2. Pagination setup
+    const page = parseInt(searchParams.page || '1', 10) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+
+    // 3. Fetch submissions from the database
     let requests: QuoteRequest[] = [];
+    let totalPages = 1;
     try {
-        // Using `ORDER BY id DESC` if you have an auto-incrementing ID to show newest first.
-        const [rows] = await pool.query('SELECT * FROM quote_requests ORDER BY id DESC LIMIT 100');
+        const [countResult] = await pool.query('SELECT COUNT(*) as count FROM quote_requests');
+        const totalItems = (countResult as unknown as { count: number }[])[0]?.count || 0;
+        totalPages = Math.ceil(totalItems / limit) || 1;
+
+        const [rows] = await pool.query(`SELECT * FROM quote_requests ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`);
         requests = rows as QuoteRequest[];
     } catch (err) {
         console.error("Failed to fetch requests:", err);
@@ -76,6 +86,27 @@ export default async function AdminDashboard() {
                             )}
                         </tbody>
                     </table>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-[#f8f9fa]">
+                        <Link
+                            href={`?page=${page > 1 ? page - 1 : 1}`}
+                            className={`px-4 py-2 border border-gray-300 text-xs font-bold uppercase tracking-widest rounded-sm transition-colors ${page <= 1 ? 'text-gray-400 bg-gray-50 cursor-not-allowed pointer-events-none' : 'text-black bg-white hover:bg-gray-50 shadow-sm'}`}
+                        >
+                            Previous
+                        </Link>
+                        <span className="text-xs text-black/70 font-bold uppercase tracking-widest">
+                            Page {page} of {totalPages}
+                        </span>
+                        <Link
+                            href={`?page=${page < totalPages ? page + 1 : totalPages}`}
+                            className={`px-4 py-2 border border-gray-300 text-xs font-bold uppercase tracking-widest rounded-sm transition-colors ${page >= totalPages ? 'text-gray-400 bg-gray-50 cursor-not-allowed pointer-events-none' : 'text-black bg-white hover:bg-gray-50 shadow-sm'}`}
+                        >
+                            Next
+                        </Link>
+                    </div>
+                )}
                 </div>
             </div>
         </div>
