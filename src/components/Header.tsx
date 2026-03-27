@@ -103,22 +103,36 @@ export default function Header() {
             onMouseLeave={() => setPagesMenuOpen(false)}
           >
             <button
-              className={`font-body text-[10px] uppercase tracking-[0.18em] font-semibold ${
+              className={`relative font-body text-[10px] uppercase tracking-[0.18em] font-semibold px-3 py-2 border rounded-sm transition-all ${
                 isTransparentHeader ? "text-white/90 hover:text-white" : "text-black hover:text-accent-red"
-              }`}
+              } ${isTransparentHeader ? "border-white/30 hover:border-white/70" : "border-black/15 hover:border-accent-red/60"}`}
+              onClick={() => setPagesMenuOpen((prev) => !prev)}
+              aria-expanded={pagesMenuOpen}
+              aria-haspopup="menu"
               type="button"
             >
-              All Pages <span className={`${pagesMenuOpen ? "inline-block rotate-180" : "inline-block"} transition-transform`}>▾</span>
+              MEDIA & SUPPORT{" "}
+              <span className={`${pagesMenuOpen ? "inline-block rotate-180" : "inline-block"} transition-transform`}>▾</span>
+              <span
+                className={`absolute bottom-0 left-0 h-[2px] w-full transform transition-transform duration-300 ${
+                  pagesMenuOpen ? "translate-x-0" : "-translate-x-full"
+                } ${isTransparentHeader ? "bg-white" : "bg-accent-red"}`}
+              />
             </button>
             {pagesMenuOpen && (
-              <div className="absolute right-0 top-full mt-3 w-[420px] max-h-[460px] overflow-y-auto bg-white border border-gray-200 shadow-2xl p-4 z-50 rounded-md">
-                <p className="px-2 pb-2 text-[11px] font-bold tracking-[0.2em] uppercase text-black/50">Media & Support Pages</p>
-                <div className="grid grid-cols-1 gap-1">
+              <div
+                className="absolute right-0 top-full mt-3 w-[480px] bg-white border border-gray-200 shadow-[0_18px_40px_rgba(0,0,0,0.18)] p-4 z-50 rounded-lg"
+                role="menu"
+              >
+                <div className="mb-3 px-1">
+                  <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-black/50">Media & Support Pages</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   {mediaSupportLinks.map((page) => (
                     <Link
                       key={page.href + page.name}
                       href={page.href}
-                      className="px-2 py-2 text-sm text-black hover:bg-accent-yellow/20 transition-colors rounded-sm"
+                      className="px-3 py-2.5 text-[14px] text-black hover:bg-accent-yellow/25 border border-transparent hover:border-accent-yellow/40 transition-colors rounded-md"
                     >
                       {page.name}
                     </Link>
@@ -192,7 +206,7 @@ export default function Header() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + groupIndex * 0.1 }}
-                    className="border border-gray-200 bg-white p-4"
+                    className="border border-gray-200 bg-white p-4 rounded-md shadow-sm"
                   >
                     <p className="text-xs uppercase tracking-[0.2em] font-bold text-black/50 mb-3">{category.title}</p>
                     <div className="grid grid-cols-1 gap-3">
