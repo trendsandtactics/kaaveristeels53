@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -32,6 +32,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [pagesMenuOpen, setPagesMenuOpen] = useState(false);
+  const pagesMenuRef = useRef<HTMLDivElement | null>(null);
 
   const pathname = usePathname();
   const isHomePage = pathname === "/";
@@ -48,6 +49,19 @@ export default function Header() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!pagesMenuRef.current) return;
+
+      if (!pagesMenuRef.current.contains(event.target as Node)) {
+        setPagesMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const isTransparentHeader = isHomePage && !scrolled;
@@ -92,15 +106,12 @@ export default function Header() {
             </Link>
           ))}
 
-          <div
-            className="relative"
-            onMouseEnter={() => setPagesMenuOpen(true)}
-            onMouseLeave={() => setPagesMenuOpen(false)}
-          >
+          <div className="relative" ref={pagesMenuRef}>
             <button
               className={`relative font-body text-[10px] uppercase tracking-[0.18em] font-semibold transition-colors ${
                 isTransparentHeader ? "text-white/90 hover:text-white" : "text-black hover:text-accent-red"
               }`}
+              onClick={() => setPagesMenuOpen((prev) => !prev)}
               aria-expanded={pagesMenuOpen}
               aria-haspopup="menu"
               type="button"
@@ -109,7 +120,7 @@ export default function Header() {
               <span className={`${pagesMenuOpen ? "inline-block rotate-180" : "inline-block"} transition-transform`}>▾</span>
             </button>
             <div
-              className={`absolute right-0 top-full mt-3 w-[360px] bg-white border border-gray-200 shadow-[0_18px_40px_rgba(0,0,0,0.14)] p-4 z-50 rounded-md transition-all duration-200 ${
+              className={`absolute right-0 top-full mt-1 w-[360px] max-h-[65vh] overflow-y-auto scroll-smooth bg-white border border-gray-200 shadow-[0_18px_40px_rgba(0,0,0,0.14)] p-4 z-50 rounded-md transition-all duration-200 ${
                 pagesMenuOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
               }`}
               role="menu"
@@ -120,10 +131,11 @@ export default function Header() {
               <div className="flex flex-col">
                 {mediaSupportLinks.map((page, index) => (
                   <Link
-                    key={page.href + page.name}
-                    href={page.href}
-                    className={`px-2 py-2 text-[15px] text-black hover:text-accent-red transition-colors ${index < mediaSupportLinks.length - 1 ? "border-b border-gray-100" : ""}`}
-                  >
+                      key={page.href + page.name}
+                      href={page.href}
+                      onClick={() => setPagesMenuOpen(false)}
+                      className={`px-2 py-2 text-[15px] text-black hover:text-accent-red transition-colors ${index < mediaSupportLinks.length - 1 ? "border-b border-gray-100" : ""}`}
+                    >
                     {page.name}
                   </Link>
                 ))}
