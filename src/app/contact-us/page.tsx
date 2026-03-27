@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { logout } from "./actions";
-import pool from "../contact-us/db";
 
 type QuoteRequest = {
     id: number;
@@ -39,6 +38,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
     let requests: QuoteRequest[] = [];
     let totalPages = 1;
     try {
+        const { getDbPool } = await import('./db');
+        const pool = getDbPool();
+
         const [countResult] = await pool.query('SELECT COUNT(*) as count FROM quote_requests');
         const totalItems = (countResult as unknown as { count: number }[])[0]?.count || 0;
         totalPages = Math.ceil(totalItems / limit) || 1;

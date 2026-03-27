@@ -1,40 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KAAVERI Steels Website
 
-## Getting Started
+This is a Next.js (App Router) project for the KAAVERI Steels website.
 
-First, run the development server:
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## MySQL backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The project now includes a backend API for quote requests using MySQL.
 
-## Learn More
+### 1) Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env.local` file in the project root:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=kaaveri
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2) API routes
 
-## Deploy on Vercel
+Base route: `/api/quote-requests`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `GET /api/quote-requests?page=1&pageSize=10`
+  - Returns paginated quote requests.
+- `POST /api/quote-requests`
+  - Creates a quote request.
+  - Required body fields: `name`, `email`, `phone`, `product_type`, `quantity`.
+  - Optional fields: `company`, `location`, `notes`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Single record route: `/api/quote-requests/:id`
 
-## Troubleshooting
+- `GET /api/quote-requests/:id`
+  - Returns one quote request by id.
+- `PUT /api/quote-requests/:id`
+  - Updates one or more fields.
+- `DELETE /api/quote-requests/:id`
+  - Deletes a quote request.
 
-If you see a `404: NOT_FOUND` error on Vercel, check the "Deployments" tab in your Vercel dashboard to ensure the build finished successfully.
+### 3) Database table
+
+The API auto-creates this table if it does not exist:
+
+- `quote_requests`
+
+Schema includes:
+
+- `id` (auto increment primary key)
+- `name`, `company`, `email`, `phone`
+- `product_type`, `quantity`, `location`, `notes`
+- `created_at`, `updated_at`
+
+## Notes
+
+- Backend DB connection logic is in `src/lib/mysql.ts`.
+- Existing admin/dashboard pages can keep using the same MySQL database.
