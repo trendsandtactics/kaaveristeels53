@@ -188,9 +188,97 @@ export default function Header() {
                   </div>
                 ))}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+
+            <Link href="/careers" className={desktopLinkClass}>
+              Careers
+            </Link>
+
+            <Link
+              href="/product-enquiry"
+              className="ml-2 relative flex items-center justify-center h-[42px] px-6 bg-accent-red text-white font-body text-[11px] uppercase tracking-[0.15em] font-bold overflow-hidden group border-2 border-accent-red shrink-0"
+            >
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-accent-red">
+                Request Quote
+              </span>
+              <div className="absolute inset-0 bg-white transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0" />
+            </Link>
+          </nav>
+
+          <button
+            className={`lg:hidden z-50 w-8 h-8 flex flex-col justify-center items-end gap-1 ${
+              isTransparentHeader ? "text-white" : "text-black"
+            }`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+            type="button"
+          >
+            <span
+              className={`block h-[2px] transition-all duration-300 ${
+                isTransparentHeader ? "bg-white" : "bg-black"
+              } ${mobileMenuOpen ? "w-5 rotate-45 translate-y-[6px]" : "w-6"}`}
+            />
+            <span
+              className={`block h-[2px] transition-all duration-300 ${
+                isTransparentHeader ? "bg-white" : "bg-black"
+              } ${mobileMenuOpen ? "opacity-0 w-5" : "w-5"}`}
+            />
+            <span
+              className={`block h-[2px] transition-all duration-300 ${
+                isTransparentHeader ? "bg-white" : "bg-black"
+              } ${mobileMenuOpen ? "w-5 -rotate-45 -translate-y-[6px]" : "w-3"}`}
+            />
+          </button>
+
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, clipPath: "circle(0% at 100% 0)" }}
+                animate={{ opacity: 1, clipPath: "circle(150% at 100% 0)" }}
+                exit={{ opacity: 0, clipPath: "circle(0% at 100% 0)" }}
+                transition={{ duration: 0.5 }}
+                className="fixed inset-0 bg-white/95 backdrop-blur-2xl z-40 flex flex-col items-center justify-center p-8"
+              >
+                <div className="w-full max-w-md space-y-6 max-h-[78vh] overflow-y-auto px-2">
+                  {[
+                    {
+                      title: "Main Pages",
+                      links: [...navLinks, { name: "Careers", href: "/careers" }],
+                    },
+                    {
+                      title: "Media & Support",
+                      links: mediaSupportLinks,
+                    },
+                  ].map((category, groupIndex) => (
+                    <motion.div
+                      key={category.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + groupIndex * 0.1 }}
+                      className="bg-white p-2"
+                    >
+                      <p className="text-xs uppercase tracking-[0.2em] font-bold text-black/50 mb-3">
+                        {category.title}
+                      </p>
+                      <div className="grid grid-cols-1 gap-3">
+                        {category.links.map((link) => (
+                          <Link
+                            key={`${category.title}-${link.href}`}
+                            href={link.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-lg text-black"
+                          >
+                            {link.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </header>
   );
