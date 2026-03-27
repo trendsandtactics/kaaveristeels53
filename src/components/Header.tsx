@@ -14,45 +14,48 @@ const navLinks = [
   { name: "Contact Us", href: "/contact-us" },
 ];
 
+const pageCategories = [
+  {
+    title: "Main Pages",
+    links: navLinks,
+  },
+  {
+    title: "Company",
+    links: [
+      { name: "Infrastructure", href: "/infrastructure" },
+      { name: "Sustainability", href: "/sustainability" },
+      { name: "Media & Events", href: "/media-events" },
+      { name: "Blogs", href: "/blogs" },
+      { name: "Careers", href: "/careers" },
+      { name: "Find Dealers", href: "/dealers" },
+    ],
+  },
+  {
+    title: "Tools",
+    links: [
+      { name: "Construction Steel Calculator", href: "/construction-steel-calculator" },
+      { name: "Weight & Bundle Calculator", href: "/weight-bundle-calculator" },
+      { name: "Product Brochure", href: "/product-brochure" },
+      { name: "Product / Other Enquiry", href: "/product-enquiry" },
+    ],
+  },
+  {
+    title: "Media & Support",
+    links: [
+      { name: "Photo Gallery", href: "/photo-gallery" },
+      { name: "Photo / Video / Project Gallery", href: "/photo-video-project-gallery" },
+      { name: "Certifications", href: "/certifications" },
+      { name: "Popup Modules", href: "/popup-modules" },
+      { name: "G-MAP with Feedback", href: "/map-feedback" },
+      { name: "Setup / Linking to Vendor", href: "/setup-linking-vendor" },
+    ],
+  },
+];
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [pagesMenuOpen, setPagesMenuOpen] = useState(false);
-
-  const dropdownCategories = [
-    {
-      title: "Company",
-      links: [
-        { name: "Infrastructure", href: "/infrastructure" },
-        { name: "Sustainability", href: "/sustainability" },
-        { name: "Media & Events", href: "/media-events" },
-        { name: "Blogs", href: "/blogs" },
-        { name: "Careers", href: "/careers" },
-        { name: "Find Dealers", href: "/dealers" },
-      ],
-    },
-    {
-      title: "Tools",
-      links: [
-        { name: "Construction Steel Calculator", href: "/construction-steel-calculator" },
-        { name: "Weight & Bundle Calculator", href: "/weight-bundle-calculator" },
-        { name: "Product Brochure", href: "/product-brochure" },
-        { name: "Product / Other Enquiry", href: "/product-enquiry" },
-      ],
-    },
-    {
-      title: "Media & Support",
-      links: [
-        { name: "Photo Gallery", href: "/photo-gallery" },
-        { name: "Photo / Video / Project Gallery", href: "/photo-video-project-gallery" },
-        { name: "Certifications", href: "/certifications" },
-        { name: "Popup Modules", href: "/popup-modules" },
-        { name: "G-MAP with Feedback", href: "/map-feedback" },
-        { name: "Setup / Linking to Vendor", href: "/setup-linking-vendor" },
-      ],
-    },
-  ];
-  const dropdownLinks = dropdownCategories.flatMap((category) => category.links);
 
   const pathname = usePathname();
   const isHomePage = pathname === "/";
@@ -129,20 +132,20 @@ export default function Header() {
               }`}
               type="button"
             >
-              All Pages ▾
+              All Pages <span className={`${pagesMenuOpen ? "inline-block rotate-180" : "inline-block"} transition-transform`}>▾</span>
             </button>
             {pagesMenuOpen && (
-              <div className="absolute right-0 top-full mt-3 w-[420px] max-h-[460px] overflow-y-auto bg-white border border-gray-200 shadow-2xl p-4 z-50">
-                <div className="grid grid-cols-1 gap-4">
-                  {dropdownCategories.map((category) => (
-                    <div key={category.title}>
+              <div className="absolute right-0 top-full mt-3 w-[520px] max-h-[460px] overflow-y-auto bg-white border border-gray-200 shadow-2xl p-4 z-50 rounded-md">
+                <div className="grid grid-cols-2 gap-4">
+                  {pageCategories.map((category) => (
+                    <div key={category.title} className="bg-gray-50 border border-gray-100 rounded-sm p-3">
                       <p className="px-2 pb-2 text-[11px] font-bold tracking-[0.2em] uppercase text-black/50">{category.title}</p>
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-1 gap-1">
                         {category.links.map((page) => (
                           <Link
                             key={page.href}
                             href={page.href}
-                            className="px-2 py-2 text-sm text-black hover:bg-accent-yellow/20 transition-colors"
+                            className="px-2 py-2 text-sm text-black hover:bg-accent-yellow/20 transition-colors rounded-sm"
                           >
                             {page.name}
                           </Link>
@@ -196,21 +199,28 @@ export default function Header() {
               transition={{ duration: 0.5 }}
               className="fixed inset-0 bg-white/95 backdrop-blur-2xl z-40 flex flex-col items-center justify-center p-8"
             >
-              <div className="flex flex-col items-center gap-8">
-                {[...navLinks, ...dropdownLinks].map((link, i) => (
+              <div className="w-full max-w-md space-y-6 max-h-[78vh] overflow-y-auto px-2">
+                {pageCategories.map((category, groupIndex) => (
                   <motion.div
-                    key={`${link.name}-${link.href}`}
+                    key={category.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + i * 0.1 }}
+                    transition={{ delay: 0.1 + groupIndex * 0.1 }}
+                    className="border border-gray-200 bg-white p-4"
                   >
-                    <Link
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-xl text-black"
-                    >
-                      {link.name}
-                    </Link>
+                    <p className="text-xs uppercase tracking-[0.2em] font-bold text-black/50 mb-3">{category.title}</p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {category.links.map((link) => (
+                        <Link
+                          key={`${category.title}-${link.href}`}
+                          href={link.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-lg text-black"
+                        >
+                          {link.name}
+                        </Link>
+                      ))}
+                    </div>
                   </motion.div>
                 ))}
               </div>
