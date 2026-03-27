@@ -8,6 +8,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { name: "Home", href: "/" },
+  { name: "About Us", href: "/about-us" },
+  { name: "Products", href: "/products" },
+  { name: "Projects", href: "/projects" },
   { name: "Contact Us", href: "/contact-us" },
 ];
 
@@ -16,25 +19,40 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [pagesMenuOpen, setPagesMenuOpen] = useState(false);
 
-  const allPages = [
-    { name: "About Us", href: "/about-us" },
-    { name: "Products", href: "/products" },
-    { name: "Media & Events", href: "/media-events" },
-    { name: "Blogs", href: "/blogs" },
-    { name: "Projects", href: "/projects" },
-    { name: "Careers", href: "/careers" },
-    { name: "Find Dealers", href: "/dealers" },
-    { name: "Construction Steel Calculator", href: "/construction-steel-calculator" },
-    { name: "Weight & Bundle Calculator", href: "/weight-bundle-calculator" },
-    { name: "Product Brochure", href: "/product-brochure" },
-    { name: "Photo Gallery", href: "/photo-gallery" },
-    { name: "Certifications", href: "/certifications" },
-    { name: "Product / Other Enquiry", href: "/product-enquiry" },
-    { name: "Popup Modules", href: "/popup-modules" },
-    { name: "Photo / Video / Project Gallery", href: "/photo-video-project-gallery" },
-    { name: "G-MAP with Feedback", href: "/map-feedback" },
-    { name: "Setup / Linking to Vendor", href: "/setup-linking-vendor" },
+  const dropdownCategories = [
+    {
+      title: "Company",
+      links: [
+        { name: "Infrastructure", href: "/infrastructure" },
+        { name: "Sustainability", href: "/sustainability" },
+        { name: "Media & Events", href: "/media-events" },
+        { name: "Blogs", href: "/blogs" },
+        { name: "Careers", href: "/careers" },
+        { name: "Find Dealers", href: "/dealers" },
+      ],
+    },
+    {
+      title: "Tools",
+      links: [
+        { name: "Construction Steel Calculator", href: "/construction-steel-calculator" },
+        { name: "Weight & Bundle Calculator", href: "/weight-bundle-calculator" },
+        { name: "Product Brochure", href: "/product-brochure" },
+        { name: "Product / Other Enquiry", href: "/product-enquiry" },
+      ],
+    },
+    {
+      title: "Media & Support",
+      links: [
+        { name: "Photo Gallery", href: "/photo-gallery" },
+        { name: "Photo / Video / Project Gallery", href: "/photo-video-project-gallery" },
+        { name: "Certifications", href: "/certifications" },
+        { name: "Popup Modules", href: "/popup-modules" },
+        { name: "G-MAP with Feedback", href: "/map-feedback" },
+        { name: "Setup / Linking to Vendor", href: "/setup-linking-vendor" },
+      ],
+    },
   ];
+  const dropdownLinks = dropdownCategories.flatMap((category) => category.links);
 
   const pathname = usePathname();
   const isHomePage = pathname === "/";
@@ -114,16 +132,23 @@ export default function Header() {
               All Pages ▾
             </button>
             {pagesMenuOpen && (
-              <div className="absolute right-0 top-full mt-3 w-[340px] max-h-[420px] overflow-y-auto bg-white border border-gray-200 shadow-2xl p-3 z-50">
-                <div className="grid grid-cols-1 gap-1">
-                  {allPages.map((page) => (
-                    <Link
-                      key={page.href}
-                      href={page.href}
-                      className="px-3 py-2 text-sm text-black hover:bg-accent-yellow/20 transition-colors"
-                    >
-                      {page.name}
-                    </Link>
+              <div className="absolute right-0 top-full mt-3 w-[420px] max-h-[460px] overflow-y-auto bg-white border border-gray-200 shadow-2xl p-4 z-50">
+                <div className="grid grid-cols-1 gap-4">
+                  {dropdownCategories.map((category) => (
+                    <div key={category.title}>
+                      <p className="px-2 pb-2 text-[11px] font-bold tracking-[0.2em] uppercase text-black/50">{category.title}</p>
+                      <div className="grid grid-cols-2 gap-1">
+                        {category.links.map((page) => (
+                          <Link
+                            key={page.href}
+                            href={page.href}
+                            className="px-2 py-2 text-sm text-black hover:bg-accent-yellow/20 transition-colors"
+                          >
+                            {page.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -172,7 +197,7 @@ export default function Header() {
               className="fixed inset-0 bg-white/95 backdrop-blur-2xl z-40 flex flex-col items-center justify-center p-8"
             >
               <div className="flex flex-col items-center gap-8">
-                {[...navLinks, ...allPages].map((link, i) => (
+                {[...navLinks, ...dropdownLinks].map((link, i) => (
                   <motion.div
                     key={`${link.name}-${link.href}`}
                     initial={{ opacity: 0, y: 20 }}
