@@ -7,7 +7,18 @@ import Footer from "@/components/Footer";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
+function resolveMetadataBase(): URL {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://lyfee.in";
+
+  try {
+    return new URL(configured);
+  } catch {
+    return new URL("https://lyfee.in");
+  }
+}
+
 export const metadata: Metadata = {
+  metadataBase: resolveMetadataBase(),
   title: "Premium Steel & TMT Bar Manufacturing",
   description: "High-performance steel manufacturing company showcasing advanced dynamic modules and raw power.",
 };

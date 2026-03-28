@@ -188,8 +188,9 @@ export default function Header() {
                   </div>
                 ))}
               </div>
-            </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );
