@@ -17,7 +17,9 @@ export async function GET(_: Request, { params }: Params) {
       return NextResponse.json({ error: "Certificate not found." }, { status: 404 });
     }
 
-    return new NextResponse(file.fileData, {
+    const fileBytes = new Uint8Array(file.fileData);
+
+    return new NextResponse(fileBytes, {
       headers: {
         "Content-Type": file.mimeType,
         "Content-Disposition": `inline; filename="${encodeURIComponent(file.fileName)}"`,
