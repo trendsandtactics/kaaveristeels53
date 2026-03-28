@@ -1,4 +1,4 @@
-import mysql, { Pool } from 'mysql2/promise';
+import mysql, { Pool, PoolOptions } from 'mysql2/promise';
 
 let pool: Pool | null = null;
 
@@ -12,18 +12,56 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-export function getPool(): Pool {
-  if (!pool) {
-    pool = mysql.createPool({
-      host: requiredEnv('MYSQL_HOST'),
-      port: Number(process.env.MYSQL_PORT ?? '3306'),
-      user: requiredEnv('MYSQL_USER'),
-      password: requiredEnv('MYSQL_PASSWORD'),
-      database: requiredEnv('MYSQL_DATABASE'),
+function parseBoolean(value: string | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+}
+
+function buildPoolOptions(): PoolOptions {
+  const mysqlUrl = process.env.MYSQL_URL?.trim();
+  const useSsl = parseBoolean(process.env.MYSQL_SSL);
+
+  if (mysqlUrl) {
+    return {
+      uri: mysqlUrl,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
-    });
+      ...(useSsl
+        ? {
+            ssl: {
+              rejectUnauthorized: !parseBoolean(process.env.MYSQL_SSL_INSECURE),
+            },
+          }
+        : {}),
+    };
+  }
+
+  return {
+    host: requiredEnv('MYSQL_HOST'),
+    port: Number(process.env.MYSQL_PORT ?? '3306'),
+    user: requiredEnv('MYSQL_USER'),
+    password: requiredEnv('MYSQL_PASSWORD'),
+    database: requiredEnv('MYSQL_DATABASE'),
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    ...(useSsl
+      ? {
+          ssl: {
+            rejectUnauthorized: !parseBoolean(process.env.MYSQL_SSL_INSECURE),
+          },
+        }
+      : {}),
+  };
+}
+
+export function getPool(): Pool {
+  if (!pool) {
+    pool = mysql.createPool(buildPoolOptions());
   }
 
   return pool;

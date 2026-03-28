@@ -75,6 +75,9 @@ export default function DealersPage() {
     );
   }, [query]);
 
+  const getGoogleMapsLink = (dealer: Dealer) =>
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${dealer.address}, ${dealer.city}`)}`;
+
   useEffect(() => {
     let cancelled = false;
     const markerMap = markersRef.current;
@@ -163,44 +166,69 @@ export default function DealersPage() {
     <GenericPlaceholderPage
       title="Partner Network"
       subtitle="Dealers & Distributors"
-      description="Find authorized KAAVERI dealers near you using our interactive Leaflet map."
+      description="Find authorized KAAVERI dealers near you, explore nearby branches, and open directions instantly in Google Maps."
       icon="📍"
       color="accent-yellow"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-14 md:py-20">
+        <div className="mb-8 rounded-2xl border border-accent-yellow/40 bg-gradient-to-r from-accent-yellow/25 via-white to-white px-5 py-6 md:px-8 md:py-7 shadow-[0_10px_35px_rgba(0,0,0,0.07)]">
+          <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+            <div>
+              <h3 className="font-heading text-3xl md:text-4xl text-black">Authorized Dealer Locations</h3>
+              <p className="mt-2 text-sm md:text-base text-black/70">
+                Select a dealer to zoom on the map and open turn-by-turn directions in Google Maps.
+              </p>
+            </div>
+            <div className="rounded-xl border border-gray-300 bg-white/90 px-3 py-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-black/60 font-semibold">Network Size</p>
+              <p className="text-2xl font-heading text-black leading-tight">{dealers.length} Cities</p>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-          <h3 className="font-heading text-3xl md:text-4xl text-black">Authorized Dealer Locations</h3>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by city, address, phone"
-            className="w-full md:max-w-sm border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black"
+            className="w-full md:max-w-sm border border-gray-300 bg-white px-4 py-3 text-sm rounded-xl shadow-sm focus:outline-none focus:border-black"
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 border border-gray-200 bg-white overflow-hidden">
+          <div className="lg:col-span-3 border border-gray-200 bg-white overflow-hidden rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <div ref={mapContainerRef} className="h-[420px] md:h-[560px] w-full" />
           </div>
 
-          <div className="lg:col-span-2 border border-gray-200 bg-white overflow-hidden">
+          <div className="lg:col-span-2 border border-gray-200 bg-white overflow-hidden rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <div className="max-h-[560px] overflow-y-auto">
               {filteredDealers.length > 0 ? (
                 filteredDealers.map((dealer) => {
                   const isActive = dealer.id === selectedDealerId;
+                  const googleMapsLink = getGoogleMapsLink(dealer);
 
                   return (
-                    <button
+                    <div
                       key={dealer.id}
-                      onClick={() => setSelectedDealerId(dealer.id)}
-                      className={`w-full text-left px-5 py-4 border-b border-gray-100 transition-colors ${
+                      className={`px-5 py-4 border-b border-gray-100 transition-colors ${
                         isActive ? "bg-accent-yellow/25" : "hover:bg-gray-50"
                       }`}
                     >
-                      <h4 className="font-heading text-xl text-black">{dealer.city} Center</h4>
-                      <p className="font-body text-sm text-black/70 mt-1">{dealer.address}</p>
-                      <p className="font-body text-sm font-semibold text-black mt-2">📞 {dealer.contact}</p>
-                    </button>
+                      <button onClick={() => setSelectedDealerId(dealer.id)} className="w-full text-left">
+                        <h4 className="font-heading text-xl text-black">{dealer.city} Center</h4>
+                        <p className="font-body text-sm text-black/70 mt-1">{dealer.address}</p>
+                        <p className="font-body text-sm font-semibold text-black mt-2">📞 {dealer.contact}</p>
+                      </button>
+
+                      <a
+                        href={googleMapsLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center rounded-lg border border-black/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-black hover:bg-black hover:text-white transition-colors"
+                      >
+                        Open in Google Maps ↗
+                      </a>
+                    </div>
                   );
                 })
               ) : (
