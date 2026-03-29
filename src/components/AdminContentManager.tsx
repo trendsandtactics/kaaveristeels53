@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type ContentModuleName = "products" | "mediaEvents" | "blogs" | "projects" | "careers" | "dealers" | "galleries" | "brochures" | "popups";
 type SupportModuleName = "enquiries" | "contact_messages" | "job_applications";
 type ModuleName = ContentModuleName | SupportModuleName;
 
-type ModuleDef = { key: ModuleName; label: string; kind: "content" | "support"; description: string };
+type ModuleDef = { key: ModuleName | "certifications"; label: string; kind: "content" | "support" | "link"; description: string; href?: string };
 type Item = Record<string, unknown> & { id: number; title?: string; slug?: string; status?: string; updated_at?: string };
 
 type FormState = {
@@ -24,6 +24,7 @@ type FormState = {
 };
 
 const MODULES: ModuleDef[] = [
+  { key: "certifications", label: "Certifications", kind: "link", description: "Manage certifications module", href: "/admin" },
   { key: "products", label: "Products", kind: "content", description: "Product catalog, specs, brochure links" },
   { key: "mediaEvents", label: "Media & Events", kind: "content", description: "Event highlights and company news" },
   { key: "blogs", label: "Blogs", kind: "content", description: "Rich blog content with SEO-ready publishing" },
@@ -58,6 +59,7 @@ function endpointForSupportModule(module: SupportModuleName): string {
 }
 
 export default function AdminContentManager() {
+  const router = useRouter();
   const [activeModule, setActiveModule] = useState<ModuleName>("products");
   const [items, setItems] = useState<Item[]>([]);
   const [search, setSearch] = useState("");
@@ -249,14 +251,15 @@ export default function AdminContentManager() {
       <aside className="lg:col-span-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm h-fit lg:sticky lg:top-28">
         <h2 className="font-heading text-xl mb-3">Modules</h2>
         <div className="space-y-2">
-          <Link href="/admin" className="block w-full text-left rounded-xl px-3 py-2 text-sm font-semibold bg-accent-yellow text-black hover:bg-accent-yellow/90">
-            Certifications
-          </Link>
           {MODULES.map((module) => (
             <button
               key={module.key}
               onClick={() => {
-                setActiveModule(module.key);
+                if (module.kind === "link" && module.href) {
+                  router.push(module.href);
+                  return;
+                }
+                setActiveModule(module.key as ModuleName);
                 setSearch("");
                 resetForm();
               }}
