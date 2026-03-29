@@ -109,3 +109,14 @@ export async function getCertificationFile(id: number): Promise<{ fileName: stri
     fileData: rows[0].file_data,
   };
 }
+
+export async function deleteCertification(id: number): Promise<boolean> {
+  await ensureCertificationsTable();
+
+  const [result] = await getPool().execute<ResultSetHeader>(
+    `DELETE FROM certifications WHERE id = ?`,
+    [id],
+  );
+
+  return result.affectedRows > 0;
+}

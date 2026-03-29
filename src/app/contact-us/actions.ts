@@ -2,13 +2,13 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { isValidAdminLogin } from '@/lib/admin-auth';
 
 export async function login(formData: FormData) {
     const email = formData.get('email');
     const password = formData.get('password');
 
-    // Hardcoded credentials check
-    if (email === 'admin@kaaveristeels.com' && password === 'Admin@123456') {
+    if (typeof email === 'string' && typeof password === 'string' && isValidAdminLogin(email, password)) {
         cookies().set('admin_session', 'authenticated', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

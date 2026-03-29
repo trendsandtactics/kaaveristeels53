@@ -1,6 +1,9 @@
 import React from "react";
+import Image from "next/image";
 import GenericPlaceholderPage from "@/components/GenericPlaceholderPage";
 import { listCertifications } from "@/lib/certifications";
+
+export const dynamic = "force-dynamic";
 
 function formatDate(value: string | null): string {
   if (!value) {
@@ -14,6 +17,40 @@ function formatDate(value: string | null): string {
   }
 
   return date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+}
+
+function CertificatePreview({ id, mimeType, title }: { id: number; mimeType: string; title: string }) {
+  const fileUrl = `/api/certifications/${id}/file`;
+
+  if (mimeType.startsWith("image/")) {
+    return (
+      <Image
+        src={fileUrl}
+        alt={title}
+        width={900}
+        height={560}
+        className="w-full h-56 object-contain rounded-xl border border-gray-200 bg-gray-50"
+        loading="lazy"
+        unoptimized
+      />
+    );
+  }
+
+  if (mimeType === "application/pdf") {
+    return (
+      <iframe
+        src={fileUrl}
+        title={`${title} preview`}
+        className="w-full h-56 rounded-xl border border-gray-200 bg-gray-50"
+      />
+    );
+  }
+
+  return (
+    <div className="w-full h-56 rounded-xl border border-dashed border-gray-300 bg-gray-50 text-sm text-black/60 flex items-center justify-center px-4 text-center">
+      Preview is not available for this file type.
+    </div>
+  );
 }
 
 export default async function CertificationsPage() {
@@ -56,6 +93,9 @@ export default async function CertificationsPage() {
                 <p className="mt-4 text-sm text-black/70">
                   <span className="font-semibold text-black">Issued by:</span> {cert.issuedBy}
                 </p>
+                <div className="mt-5">
+                  <CertificatePreview id={cert.id} mimeType={cert.mimeType} title={cert.title} />
+                </div>
                 <a
                   href={`/api/certifications/${cert.id}/file`}
                   target="_blank"
