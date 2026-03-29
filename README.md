@@ -38,6 +38,11 @@ MYSQL_DATABASE=u546576758_kaaveri
 # MYSQL_SSL=true
 # MYSQL_SSL_INSECURE=false
 
+
+# Admin panel login
+NEXT_PUBLIC_ADMIN_EMAIL=admin@kaaveristeels.com
+NEXT_PUBLIC_ADMIN_PASSWORD=Admin@Kaaveri
+
 ```
 
 > Production tip: set these values in your hosting provider's environment settings (for example, Vercel Project Settings → Environment Variables) rather than committing credentials into source control.
@@ -109,7 +114,7 @@ The API auto-creates these tables if they do not exist:
 
 - DB connection logic is in `src/lib/mysql.ts`.
 - Certifications helper logic is in `src/lib/certifications.ts`.
-- Admin certifications UI is available at `/admin/certifications`.
+- Admin login + certifications panel is available at `/admin` (legacy `/admin/certifications` redirects to `/admin`).
 
 
 ### Troubleshooting
