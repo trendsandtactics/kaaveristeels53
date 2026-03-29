@@ -1,13 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import AdminCertificationsPanel from "@/components/AdminCertificationsPanel";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type ContentModuleName = "products" | "mediaEvents" | "blogs" | "projects" | "careers" | "dealers" | "galleries" | "brochures" | "popups";
 type SupportModuleName = "enquiries" | "contact_messages" | "job_applications";
-type ModuleName = ContentModuleName | SupportModuleName;
+type ModuleName = ContentModuleName | SupportModuleName | "certifications";
 
-type ModuleDef = { key: ModuleName | "certifications"; label: string; kind: "content" | "support" | "link"; description: string; href?: string };
+type ModuleDef = { key: ModuleName; label: string; kind: "content" | "support" | "certifications"; description: string };
 type Item = Record<string, unknown> & { id: number; title?: string; slug?: string; status?: string; updated_at?: string };
 
 type FormState = {
@@ -24,7 +24,7 @@ type FormState = {
 };
 
 const MODULES: ModuleDef[] = [
-  { key: "certifications", label: "Certifications", kind: "link", description: "Manage certifications module", href: "/admin" },
+  { key: "certifications", label: "Certifications", kind: "certifications", description: "Upload and manage certification files" },
   { key: "products", label: "Products", kind: "content", description: "Product catalog, specs, brochure links" },
   { key: "mediaEvents", label: "Media & Events", kind: "content", description: "Event highlights and company news" },
   { key: "blogs", label: "Blogs", kind: "content", description: "Rich blog content with SEO-ready publishing" },
@@ -59,7 +59,6 @@ function endpointForSupportModule(module: SupportModuleName): string {
 }
 
 export default function AdminContentManager() {
-  const router = useRouter();
   const [activeModule, setActiveModule] = useState<ModuleName>("products");
   const [items, setItems] = useState<Item[]>([]);
   const [search, setSearch] = useState("");
@@ -134,7 +133,7 @@ export default function AdminContentManager() {
 
   const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (activeDef.kind === "support") return;
+    if (activeDef.kind !== "content") return;
 
     try {
       const url = editingId ? `/api/admin/content/${activeModule}/${editingId}` : `/api/admin/content/${activeModule}`;
@@ -155,7 +154,7 @@ export default function AdminContentManager() {
   };
 
   const deleteRow = async (id: number) => {
-    if (activeDef.kind === "support") return;
+    if (activeDef.kind !== "content") return;
     if (!confirm("Delete this record?")) return;
     const response = await fetch(`/api/admin/content/${activeModule}/${id}`, { method: "DELETE" });
     const data = await response.json();
@@ -168,7 +167,7 @@ export default function AdminContentManager() {
   };
 
   const editRow = (row: Item) => {
-    if (activeDef.kind === "support") return;
+    if (activeDef.kind !== "content") return;
     const extra = (typeof row.extra_data === "string" && row.extra_data ? JSON.parse(String(row.extra_data)) : row.extra_data) as Record<string, string> | null;
     setEditingId(row.id);
     setForm({
@@ -188,6 +187,22 @@ export default function AdminContentManager() {
   const applyRich = (command: string, value?: string) => {
     document.execCommand(command, false, value);
     setForm((state) => ({ ...state, content: richEditorRef.current?.innerHTML ?? "" }));
+  };
+
+  const uploadFromDevice = async (file: File, target: "cover_image" | "file_url" | "video_url") => {
+    const body = new FormData();
+    body.append("file", file);
+
+    const response = await fetch("/api/uploads", { method: "POST", body });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(data.error ?? "Upload failed.");
+      return;
+    }
+
+    setForm((state) => ({ ...state, [target]: data.url }));
+    setMessage("File uploaded successfully.");
   };
 
   const renderModuleSpecificFields = () => {
@@ -255,11 +270,7 @@ export default function AdminContentManager() {
             <button
               key={module.key}
               onClick={() => {
-                if (module.kind === "link" && module.href) {
-                  router.push(module.href);
-                  return;
-                }
-                setActiveModule(module.key as ModuleName);
+                setActiveModule(module.key);
                 setSearch("");
                 resetForm();
               }}
@@ -272,6 +283,8 @@ export default function AdminContentManager() {
       </aside>
 
       <section className="lg:col-span-9 space-y-6">
+        {activeDef.kind === "certifications" ? <AdminCertificationsPanel /> : null}
+
         {activeDef.kind === "content" ? (
           <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
             <h3 className="font-heading text-2xl mb-1">{editingId ? "Edit" : "Create"} {activeDef.label}</h3>
@@ -290,8 +303,20 @@ export default function AdminContentManager() {
                 <textarea className="md:col-span-2 border rounded-lg px-3 py-2 text-sm min-h-32" placeholder="Content" value={form.content} onChange={(e) => setForm((s) => ({ ...s, content: e.target.value }))} />
               ) : null}
 
-              <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Cover image URL" value={form.cover_image} onChange={(e) => setForm((s) => ({ ...s, cover_image: e.target.value }))} />
-              <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Video URL" value={form.video_url} onChange={(e) => setForm((s) => ({ ...s, video_url: e.target.value }))} />
+              <div className="space-y-2">
+                <input className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Cover image URL" value={form.cover_image} onChange={(e) => setForm((s) => ({ ...s, cover_image: e.target.value }))} />
+                <input type="file" accept="image/*" className="w-full border rounded-lg px-3 py-2 text-sm" onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadFromDevice(file, "cover_image");
+                }} />
+              </div>
+              <div className="space-y-2">
+                <input className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Video URL" value={form.video_url} onChange={(e) => setForm((s) => ({ ...s, video_url: e.target.value }))} />
+                <input type="file" accept="video/*,application/pdf" className="w-full border rounded-lg px-3 py-2 text-sm" onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadFromDevice(file, "file_url");
+                }} />
+              </div>
 
               {renderModuleSpecificFields()}
 
@@ -306,56 +331,58 @@ export default function AdminContentManager() {
           </div>
         ) : null}
 
-        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h3 className="font-heading text-2xl">{activeDef.label}</h3>
-            {activeDef.kind === "content" ? (
-              <div className="flex gap-2">
-                <input value={search} onChange={(e) => setSearch(e.target.value)} className="border rounded-lg px-3 py-2 text-sm" placeholder="Search" />
-                <button onClick={fetchItems} className="rounded-lg bg-gray-900 text-white px-3 py-2 text-sm" type="button">Apply</button>
-              </div>
-            ) : null}
-          </div>
+        {activeDef.kind !== "certifications" ? (
+          <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h3 className="font-heading text-2xl">{activeDef.label}</h3>
+              {activeDef.kind === "content" ? (
+                <div className="flex gap-2">
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} className="border rounded-lg px-3 py-2 text-sm" placeholder="Search" />
+                  <button onClick={fetchItems} className="rounded-lg bg-gray-900 text-white px-3 py-2 text-sm" type="button">Apply</button>
+                </div>
+              ) : null}
+            </div>
 
-          <div className="overflow-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left border-b text-black/60">
-                  <th className="py-2 pr-3">Title / Name</th>
-                  <th className="py-2 pr-3">Status</th>
-                  <th className="py-2 pr-3">Updated</th>
-                  <th className="py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((row) => (
-                  <tr key={row.id} className="border-b last:border-b-0">
-                    <td className="py-3 pr-3">
-                      <div className="font-semibold">{String(row.title ?? row.name ?? `#${row.id}`)}</div>
-                      {row.slug ? <div className="text-xs text-black/50">/{String(row.slug)}</div> : null}
-                    </td>
-                    <td className="py-3 pr-3">{String(row.status ?? "-")}</td>
-                    <td className="py-3 pr-3">{row.updated_at ? new Date(String(row.updated_at)).toLocaleDateString() : "-"}</td>
-                    <td className="py-3">
-                      {activeDef.kind === "content" ? (
-                        <div className="space-x-3">
-                          <button onClick={() => editRow(row)} className="text-blue-700 font-semibold">Edit</button>
-                          <button onClick={() => deleteRow(row.id)} className="text-red-700 font-semibold">Delete</button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-black/50">Read only</span>
-                      )}
-                    </td>
+            <div className="overflow-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left border-b text-black/60">
+                    <th className="py-2 pr-3">Title / Name</th>
+                    <th className="py-2 pr-3">Status</th>
+                    <th className="py-2 pr-3">Updated</th>
+                    <th className="py-2">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {items.map((row) => (
+                    <tr key={row.id} className="border-b last:border-b-0">
+                      <td className="py-3 pr-3">
+                        <div className="font-semibold">{String(row.title ?? row.name ?? `#${row.id}`)}</div>
+                        {row.slug ? <div className="text-xs text-black/50">/{String(row.slug)}</div> : null}
+                      </td>
+                      <td className="py-3 pr-3">{String(row.status ?? "-")}</td>
+                      <td className="py-3 pr-3">{row.updated_at ? new Date(String(row.updated_at)).toLocaleDateString() : "-"}</td>
+                      <td className="py-3">
+                        {activeDef.kind === "content" ? (
+                          <div className="space-x-3">
+                            <button onClick={() => editRow(row)} className="text-blue-700 font-semibold">Edit</button>
+                            <button onClick={() => deleteRow(row.id)} className="text-red-700 font-semibold">Delete</button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-black/50">Read only</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          {!loading && !items.length ? <p className="mt-4 text-sm text-black/50">No records found.</p> : null}
-          {loading ? <p className="mt-4 text-sm text-black/50">Loading...</p> : null}
-          {message ? <p className="mt-3 text-sm text-black/70">{message}</p> : null}
-        </div>
+            {!loading && !items.length ? <p className="mt-4 text-sm text-black/50">No records found.</p> : null}
+            {loading ? <p className="mt-4 text-sm text-black/50">Loading...</p> : null}
+            {message ? <p className="mt-3 text-sm text-black/70">{message}</p> : null}
+          </div>
+        ) : null}
       </section>
     </div>
   );
