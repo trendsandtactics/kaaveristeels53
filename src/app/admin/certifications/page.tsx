@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Certification = {
   id: number;
@@ -10,6 +10,17 @@ type Certification = {
   issueDate: string | null;
   createdAt: string;
 };
+
+async function readApiResponse(response: Response): Promise<{ error?: string; certifications?: Certification[] }> {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  return { error: text || "Unexpected server response." };
+}
 
 export default function AdminCertificationsPage() {
   const [title, setTitle] = useState("");
@@ -22,17 +33,47 @@ export default function AdminCertificationsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [items, setItems] = useState<Certification[]>([]);
 
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     const response = await fetch("/api/certifications", { cache: "no-store" });
-    const data = await response.json();
+    const data = await readApiResponse(response);
+
+    if (!response.ok) {
+      throw new Error(data.error ?? "Unable to fetch certificates.");
+    }
+
     setItems(data.certifications ?? []);
-  };
+  }, []);
 
   useEffect(() => {
     loadItems().catch(() => {
       setMessage("Unable to fetch certificates.");
     });
-  }, []);
+  }, [loadItems]);
+
+  const onDelete = async (id: number) => {
+    setMessage("");
+    setDeletingId(id);
+
+    try {
+      const response = await fetch(`/api/certifications/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await readApiResponse(response);
+
+      if (!response.ok) {
+        setMessage(data.error ?? "Unable to delete certificate.");
+        return;
+      }
+
+      setItems((current) => current.filter((item) => item.id !== id));
+      setMessage("Certificate deleted successfully.");
+    } catch {
+      setMessage("Delete failed due to network/server issue.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const onDelete = async (id: number) => {
     setMessage("");
@@ -84,7 +125,7 @@ export default function AdminCertificationsPage() {
         body: formData,
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         setMessage(data.error ?? "Upload failed.");
@@ -99,7 +140,7 @@ export default function AdminCertificationsPage() {
       setFile(null);
       await loadItems();
     } catch {
-      setMessage("Upload failed due to network/server issue.");
+      setMessage("Upload failed. Please verify server/database connection and try again.");
     } finally {
       setLoading(false);
     }
