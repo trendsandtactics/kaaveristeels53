@@ -50,7 +50,7 @@ export default function AdminCertificationsPage() {
     });
   }, [loadItems]);
 
-  const onDelete = async (id: number) => {
+  const handleDelete = async (id: number) => {
     setMessage("");
     setDeletingId(id);
 
@@ -75,34 +75,8 @@ export default function AdminCertificationsPage() {
     }
   };
 
-  const onDelete = async (id: number) => {
-    setMessage("");
-    setDeletingId(id);
-
-    try {
-      const response = await fetch(`/api/certifications/${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(data.error ?? "Unable to delete certificate.");
-        return;
-      }
-
-      setItems((current) => current.filter((item) => item.id !== id));
-      setMessage("Certificate deleted successfully.");
-    } catch {
-      setMessage("Delete failed due to network/server issue.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
 
     if (!file) {
       setMessage("Select certificate file.");
@@ -153,7 +127,7 @@ export default function AdminCertificationsPage() {
           <h1 className="font-heading text-3xl text-black mb-2">Certifications Admin</h1>
           <p className="text-sm text-black/65 mb-6">Upload certificate files to MySQL and publish on the public certifications page.</p>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="text"
               value={title}
@@ -222,7 +196,7 @@ export default function AdminCertificationsPage() {
                       </a>
                       <button
                         type="button"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => handleDelete(item.id)}
                         disabled={deletingId === item.id}
                         className="text-xs uppercase tracking-[0.12em] font-semibold text-red-700 disabled:opacity-60"
                       >
