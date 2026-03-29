@@ -38,6 +38,11 @@ MYSQL_DATABASE=u546576758_kaaveri
 # MYSQL_SSL=true
 # MYSQL_SSL_INSECURE=false
 
+
+# Admin panel login
+NEXT_PUBLIC_ADMIN_EMAIL=admin@kaaveristeels.com
+NEXT_PUBLIC_ADMIN_PASSWORD=Admin@Kaaveri
+
 ```
 
 > Production tip: set these values in your hosting provider's environment settings (for example, Vercel Project Settings → Environment Variables) rather than committing credentials into source control.
@@ -65,6 +70,15 @@ NEXT_PUBLIC_SITE_URL=https://lyfee.in
 > Keep sensitive values (like DB password) in your hosting dashboard env settings only.
 
 **Remote SQL note:** if `MYSQL_HOST` is not provided, the app now defaults to `193.203.184.173`.
+
+
+### Dynamic CMS SQL bootstrap
+
+A complete production SQL file for all pending dynamic modules is available at:
+
+- `sql/dynamic_modules_schema.sql` (includes dynamic modules + certifications table)
+
+You can run it directly against MySQL before deploying admin/content APIs.
 
 ### 2) API routes
 
@@ -104,12 +118,13 @@ The API auto-creates these tables if they do not exist:
 
 - `quote_requests`
 - `certifications`
+- `cms_uploads` (admin uploaded media/files for CMS modules)
 
 ## Notes
 
 - DB connection logic is in `src/lib/mysql.ts`.
 - Certifications helper logic is in `src/lib/certifications.ts`.
-- Admin certifications UI is available at `/admin/certifications`.
+- Admin login + certifications panel is available at `/admin` (legacy `/admin/certifications` redirects to `/admin`).
 
 
 ### Troubleshooting
