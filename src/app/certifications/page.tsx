@@ -2,6 +2,8 @@ import React from "react";
 import GenericPlaceholderPage from "@/components/GenericPlaceholderPage";
 import { listCertifications } from "@/lib/certifications";
 
+export const dynamic = "force-dynamic";
+
 function formatDate(value: string | null): string {
   if (!value) {
     return "Date not specified";

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { insertCertification, listCertifications } from "@/lib/certifications";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const certifications = await listCertifications();
