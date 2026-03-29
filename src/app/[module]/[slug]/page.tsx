@@ -20,7 +20,7 @@ export default async function ModuleDetailPage({ params }: { params: Promise<{ m
 
   const title = String(item.title ?? "Detail");
   const description = String(item.short_description ?? item.content ?? "");
-  const image = resolveMediaUrl(item.cover_image, "/image/kaaveriabout.png");
+  const image = resolveMediaUrl(item.cover_image ?? item.file_url, "/image/kaaveriabout.png");
 
   return (
     <main className="min-h-screen pt-24 bg-gray-50">

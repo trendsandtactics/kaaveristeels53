@@ -35,7 +35,7 @@ export default function PopupRenderer() {
   return (
     <div className="fixed inset-0 z-[100] bg-black/60 p-4 flex items-center justify-center">
       <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden">
-        {popup.cover_image ? <div className="relative h-52 w-full"><Image src={resolveMediaUrl(popup.cover_image, "/image/certificate.jpg")} alt={popup.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 640px" /></div> : null}
+        {popup.cover_image ? <div className="relative h-52 w-full"><Image src={resolveMediaUrl(popup.cover_image ?? popup.file_url, "/image/certificate.jpg")} alt={popup.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 640px" /></div> : null}
         <div className="p-6">
           <h3 className="font-heading text-3xl text-black">{popup.title}</h3>
           <p className="text-sm text-black/70 mt-2">{popup.short_description ?? popup.content ?? ""}</p>

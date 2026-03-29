@@ -83,7 +83,7 @@ export default function DynamicModulePage({ module, heading, subtitle }: { modul
             <div className="grid md:grid-cols-3 gap-5">
               {featured.map((item) => (
                 <article key={item.id} className="rounded-2xl border border-black/10 bg-white overflow-hidden shadow-sm hover:shadow-xl transition-shadow">
-                  <div className="relative h-44 w-full"><Image src={resolveMediaUrl(item.cover_image, fallbackImage)} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" /></div>
+                  <div className="relative h-44 w-full"><Image src={resolveMediaUrl(item.cover_image ?? item.file_url, fallbackImage)} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" /></div>
                   <div className="p-5">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-black/50 font-semibold">Featured</p>
                     <h3 className="font-heading text-2xl mt-2">{item.title}</h3>
@@ -98,8 +98,8 @@ export default function DynamicModulePage({ module, heading, subtitle }: { modul
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
           {items.map((item) => (
             <article key={item.id} className="group rounded-2xl border border-black/10 bg-white overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="relative">
-                <Image src={resolveMediaUrl(item.cover_image, fallbackImage)} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" />
+              <div className="relative h-56 w-full">
+                <Image src={resolveMediaUrl(item.cover_image ?? item.file_url, fallbackImage)} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" />
                 <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
                 <p className="absolute bottom-3 left-4 text-[10px] uppercase tracking-[0.18em] text-white font-semibold">{module}</p>
               </div>
