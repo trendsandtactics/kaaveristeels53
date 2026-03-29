@@ -57,7 +57,8 @@ export default function CertificationsPage() {
         throw new Error(data.error ?? "Unable to fetch certificates.");
       }
 
-      setItems(data.certifications ?? []);
+      // show only 3 certificates
+      setItems((data.certifications ?? []).slice(0, 3));
     } catch (err) {
       setError(
         err instanceof Error
@@ -75,8 +76,7 @@ export default function CertificationsPage() {
 
   return (
     <section className="min-h-screen bg-[#f8f8f8] px-4 pt-28 pb-16 md:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="text-center">
           <h1 className="font-heading text-4xl md:text-5xl text-black">
@@ -93,48 +93,63 @@ export default function CertificationsPage() {
           <p className="text-center mt-12 text-black/60">Loading...</p>
         ) : error ? (
           <p className="text-center mt-12 text-red-600">{error}</p>
+        ) : items.length === 0 ? (
+          <p className="text-center mt-12 text-black/60">
+            No certificates available.
+          </p>
         ) : (
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-10 justify-center">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {items.map((item) => {
               const fileUrl = `/api/certifications/${item.id}/file`;
 
               return (
                 <div
                   key={item.id}
-                  className="bg-white rounded-3xl border border-gray-200 shadow-md p-6 flex flex-col items-center text-center"
+                  className="bg-white rounded-3xl border border-gray-200 shadow-md p-6 flex flex-col"
                 >
                   {/* Title + Date */}
-                  <div className="w-full flex justify-between items-start mb-4">
-                    <h2 className="text-2xl font-semibold text-black text-left">
+                  <div className="w-full flex justify-between items-start gap-4 mb-4">
+                    <h2 className="text-2xl font-semibold text-black leading-snug">
                       {item.title}
                     </h2>
 
                     {item.issueDate && (
-                      <span className="text-xs text-black/60 uppercase">
+                      <span className="shrink-0 text-xs text-black/60 uppercase mt-1">
                         {formatDate(item.issueDate)}
                       </span>
                     )}
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-black/70 text-left mb-2">
+                  <p className="text-sm text-black/70 mb-2 leading-relaxed">
                     {item.description}
                   </p>
 
                   {/* Issued */}
-                  <p className="text-sm text-black/70 text-left w-full mb-4">
+                  <p className="text-sm text-black/70 mb-5">
                     <span className="font-semibold">Issued by:</span>{" "}
                     {item.issuedBy}
                   </p>
 
-                  {/* Certificate Image (FULL VISIBLE) */}
-                  <div className="w-full bg-gray-50 p-4 rounded-2xl flex justify-center">
-                    <img
-                      src={fileUrl}
-                      alt={item.title}
-                      className="w-full h-auto object-contain rounded-xl"
-                    />
-                  </div>
+                  {/* Clickable Certificate */}
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:shadow-lg transition"
+                  >
+                    <div className="w-full h-[420px] flex items-center justify-center overflow-hidden rounded-xl bg-white">
+                      <img
+                        src={fileUrl}
+                        alt={item.title}
+                        className="max-w-full max-h-full object-contain rounded-xl"
+                      />
+                    </div>
+
+                    <p className="mt-3 text-sm font-medium text-center text-black/70 group-hover:text-black transition">
+                      Click to view full certificate
+                    </p>
+                  </a>
                 </div>
               );
             })}
