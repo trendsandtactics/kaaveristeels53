@@ -57,8 +57,7 @@ export default function CertificationsPage() {
         throw new Error(data.error ?? "Unable to fetch certificates.");
       }
 
-      // show only 3 certificates
-      setItems((data.certifications ?? []).slice(0, 3));
+      setItems(data.certifications ?? []);
     } catch (err) {
       setError(
         err instanceof Error
@@ -75,87 +74,93 @@ export default function CertificationsPage() {
   }, [loadItems]);
 
   return (
-    <section className="min-h-screen bg-[#f8f8f8] px-4 pt-28 pb-16 md:px-8 lg:px-12">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="font-heading text-4xl md:text-5xl text-black">
-            Verified Certificates
-          </h1>
-          <p className="mt-4 text-black/70 max-w-2xl mx-auto">
-            Each certification below is published from the KAAVERI admin panel
-            and is visible publicly for full transparency.
+    <main className="min-h-screen bg-[#f6f6f6]">
+      {/* Hero Section */}
+      <section className="relative w-full overflow-hidden bg-gradient-to-r from-accent-yellow via-[#FFD700] to-accent-yellow py-24 text-black shadow-2xl md:py-32">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.8)_0%,transparent_60%)] mix-blend-overlay" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30 mix-blend-overlay" />
+
+        <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
+          <div className="mb-6 flex items-center justify-center gap-4">
+            <div className="h-[2px] w-12 bg-black" />
+            <h1 className="font-body text-sm font-bold uppercase tracking-[0.2em] text-black">
+              Verified Certificates
+            </h1>
+            <div className="h-[2px] w-12 bg-black" />
+          </div>
+
+          <h2 className="font-heading text-4xl leading-tight md:text-6xl">
+            Trusted Quality.
+            <br />
+            Proven Standards.
+          </h2>
+
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-black/75 md:text-lg">
+            Explore KAAVERI certifications published directly from the admin
+            panel for complete public transparency, trust, and quality
+            assurance.
           </p>
         </div>
+      </section>
 
-        {/* Content */}
-        {loading ? (
-          <p className="text-center mt-12 text-black/60">Loading...</p>
-        ) : error ? (
-          <p className="text-center mt-12 text-red-600">{error}</p>
-        ) : items.length === 0 ? (
-          <p className="text-center mt-12 text-black/60">
-            No certificates available.
-          </p>
-        ) : (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {items.map((item) => {
-              const fileUrl = `/api/certifications/${item.id}/file`;
+      {/* Certificates Section */}
+      <section className="px-4 py-14 md:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto max-w-[1600px]">
+          {loading ? (
+            <p className="py-20 text-center text-base text-black/60">
+              Loading certificates...
+            </p>
+          ) : error ? (
+            <p className="py-20 text-center text-base text-red-600">{error}</p>
+          ) : items.length === 0 ? (
+            <p className="py-20 text-center text-base text-black/60">
+              No certificates available yet.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 2xl:grid-cols-3">
+              {items.slice(0, 3).map((item) => {
+                const fileUrl = `/api/certifications/${item.id}/file`;
 
-              return (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-3xl border border-gray-200 shadow-md p-6 flex flex-col"
-                >
-                  {/* Title + Date */}
-                  <div className="w-full flex justify-between items-start gap-4 mb-4">
-                    <h2 className="text-2xl font-semibold text-black leading-snug">
-                      {item.title}
-                    </h2>
-
-                    {item.issueDate && (
-                      <span className="shrink-0 text-xs text-black/60 uppercase mt-1">
-                        {formatDate(item.issueDate)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-sm text-black/70 mb-2 leading-relaxed">
-                    {item.description}
-                  </p>
-
-                  {/* Issued */}
-                  <p className="text-sm text-black/70 mb-5">
-                    <span className="font-semibold">Issued by:</span>{" "}
-                    {item.issuedBy}
-                  </p>
-
-                  {/* Clickable Certificate */}
-                  <a
-                    href={fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:shadow-lg transition"
+                return (
+                  <article
+                    key={item.id}
+                    className="flex h-full flex-col rounded-[30px] border border-black/10 bg-white p-6 shadow-[0_12px_35px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.10)]"
                   >
-                    <div className="w-full h-[420px] flex items-center justify-center overflow-hidden rounded-xl bg-white">
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <h3 className="font-heading text-2xl leading-tight text-black md:text-3xl">
+                        {item.title}
+                      </h3>
+
+                      {item.issueDate ? (
+                        <span className="shrink-0 pt-1 text-xs font-semibold uppercase tracking-[0.14em] text-black/55 md:text-sm">
+                          {formatDate(item.issueDate)}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <p className="mb-3 text-sm leading-7 text-black/72 md:text-base">
+                      {item.description}
+                    </p>
+
+                    <p className="mb-5 text-sm text-black/72">
+                      <span className="font-semibold text-black">Issued by:</span>{" "}
+                      {item.issuedBy}
+                    </p>
+
+                    <div className="flex flex-1 items-center justify-center rounded-[24px] border border-black/10 bg-[#fafafa] p-4 md:p-5">
                       <img
                         src={fileUrl}
                         alt={item.title}
-                        className="max-w-full max-h-full object-contain rounded-xl"
+                        className="block h-auto max-h-[620px] w-full rounded-2xl object-contain"
                       />
                     </div>
-
-                    <p className="mt-3 text-sm font-medium text-center text-black/70 group-hover:text-black transition">
-                      Click to view full certificate
-                    </p>
-                  </a>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </section>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
   );
 }
