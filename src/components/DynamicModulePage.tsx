@@ -43,8 +43,11 @@ export default function DynamicModulePage({ module, heading, subtitle }: { modul
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
+    const requestInit: RequestInit = debouncedQ
+      ? { cache: "no-store", signal: controller.signal }
+      : { cache: "force-cache", signal: controller.signal };
 
-    fetch(`/api/public/content/${module}?q=${encodeURIComponent(debouncedQ)}&limit=24`, { cache: "no-store", signal: controller.signal })
+    fetch(`/api/public/content/${module}?q=${encodeURIComponent(debouncedQ)}&limit=24`, requestInit)
       .then((res) => res.json())
       .then((data) => setItems(data.data ?? []))
       .catch((error) => {

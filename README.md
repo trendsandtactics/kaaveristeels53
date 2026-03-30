@@ -130,3 +130,4 @@ The API auto-creates these tables if they do not exist:
 ### Troubleshooting
 
 - If uploads fail, verify MySQL connection values are correct (`MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`).
+- If a Vercel deployment is marked **"Canceled from the Vercel Dashboard"**, open the deployment in Vercel and click **Redeploy** (or trigger a new commit) after confirming no one manually canceled the previous run.

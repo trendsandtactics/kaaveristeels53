@@ -1,5 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getPool } from "@/lib/mysql";
+import { clearCacheByPrefix, getOrSetCache } from "@/lib/server-cache";
 
 export const MODULE_TABLES = {
   products: "products",
@@ -14,6 +15,9 @@ export const MODULE_TABLES = {
 } as const;
 
 export type ModuleKey = keyof typeof MODULE_TABLES;
+const PUBLIC_LIST_CACHE_TTL_MS = 5 * 60 * 1000;
+const PUBLIC_DETAIL_CACHE_TTL_MS = 10 * 60 * 1000;
+let dynamicCmsBootstrapPromise: Promise<void> | null = null;
 
 export type ContentInput = {
   title: string;
@@ -95,6 +99,11 @@ function baseContentTable(tableName: string): string {
 }
 
 export async function ensureDynamicCmsTables(): Promise<void> {
+  if (dynamicCmsBootstrapPromise) {
+    return dynamicCmsBootstrapPromise;
+  }
+
+  dynamicCmsBootstrapPromise = (async () => {
   const pool = getPool();
 
   await pool.query(baseContentTable("products"));
@@ -265,11 +274,18 @@ export async function ensureDynamicCmsTables(): Promise<void> {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+  })();
+
+  try {
+    await dynamicCmsBootstrapPromise;
+  } catch (error) {
+    dynamicCmsBootstrapPromise = null;
+    throw error;
+  }
 }
 
-export async function listModuleItems(moduleName: string, options?: { status?: string; q?: string; limit?: number }): Promise<ContentRow[]> {
-  await ensureDynamicCmsTables();
-
+async function queryModuleItems(moduleName: string, options?: { status?: string; q?: string; limit?: number }): Promise<ContentRow[]> {
+  const limit = Math.min(Math.max(options?.limit ?? 50, 1), 200);
   if (moduleName === "dealers") {
     const where: string[] = [];
     const params: Array<string> = [];
@@ -281,7 +297,6 @@ export async function listModuleItems(moduleName: string, options?: { status?: s
       where.push("(title LIKE ? OR city LIKE ? OR state LIKE ?)");
       params.push(`%${options.q}%`, `%${options.q}%`, `%${options.q}%`);
     }
-    const limit = Math.min(Math.max(options?.limit ?? 50, 1), 200);
     const sql = `SELECT id,title,slug,short_description,content,cover_image,file_url,video_url,status,featured,sort_order,NULL as meta_title,NULL as meta_description,NULL as extra_data,created_at,updated_at FROM dealers ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY featured DESC, sort_order ASC, updated_at DESC LIMIT ${limit}`;
     const [rows] = await getPool().query<ContentRow[]>(sql, params);
     return rows;
@@ -302,10 +317,22 @@ export async function listModuleItems(moduleName: string, options?: { status?: s
     params.push(`%${options.q}%`, `%${options.q}%`);
   }
 
-  const limit = Math.min(Math.max(options?.limit ?? 50, 1), 200);
   const sql = `SELECT * FROM ${table} ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY featured DESC, sort_order ASC, updated_at DESC LIMIT ${limit}`;
   const [rows] = await getPool().query<ContentRow[]>(sql, params);
   return rows;
+}
+
+export async function listModuleItems(moduleName: string, options?: { status?: string; q?: string; limit?: number }): Promise<ContentRow[]> {
+  await ensureDynamicCmsTables();
+  const isPublicRead = options?.status === "published" && !options?.q;
+  const limit = Math.min(Math.max(options?.limit ?? 50, 1), 200);
+
+  if (isPublicRead) {
+    const cacheKey = `dynamic-cms:list:${moduleName}:${limit}`;
+    return getOrSetCache(cacheKey, PUBLIC_LIST_CACHE_TTL_MS, () => queryModuleItems(moduleName, { ...options, limit, q: undefined }));
+  }
+
+  return queryModuleItems(moduleName, { ...options, limit });
 }
 
 export async function createModuleItem(moduleName: string, input: ContentInput): Promise<number> {
@@ -335,6 +362,7 @@ export async function createModuleItem(moduleName: string, input: ContentInput):
         input.sort_order ?? 0,
       ],
     );
+    clearCacheByPrefix("dynamic-cms:");
     return result.insertId;
   }
 
@@ -361,6 +389,7 @@ export async function createModuleItem(moduleName: string, input: ContentInput):
     ],
   );
 
+  clearCacheByPrefix("dynamic-cms:");
   return result.insertId;
 }
 
@@ -390,7 +419,11 @@ export async function updateModuleItem(moduleName: string, id: number, input: Co
         id,
       ],
     );
-    return result.affectedRows > 0;
+    const updated = result.affectedRows > 0;
+    if (updated) {
+      clearCacheByPrefix("dynamic-cms:");
+    }
+    return updated;
   }
 
   const moduleKey = safeModule(moduleName);
@@ -416,7 +449,11 @@ export async function updateModuleItem(moduleName: string, id: number, input: Co
     ],
   );
 
-  return result.affectedRows > 0;
+  const updated = result.affectedRows > 0;
+  if (updated) {
+    clearCacheByPrefix("dynamic-cms:");
+  }
+  return updated;
 }
 
 export async function deleteModuleItem(moduleName: string, id: number): Promise<boolean> {
@@ -424,33 +461,44 @@ export async function deleteModuleItem(moduleName: string, id: number): Promise<
 
   if (moduleName === "dealers") {
     const [result] = await getPool().execute<ResultSetHeader>("DELETE FROM dealers WHERE id = ?", [id]);
-    return result.affectedRows > 0;
+    const deleted = result.affectedRows > 0;
+    if (deleted) {
+      clearCacheByPrefix("dynamic-cms:");
+    }
+    return deleted;
   }
 
   const moduleKey = safeModule(moduleName);
   const table = MODULE_TABLES[moduleKey];
   const [result] = await getPool().execute<ResultSetHeader>(`DELETE FROM ${table} WHERE id = ?`, [id]);
-  return result.affectedRows > 0;
+  const deleted = result.affectedRows > 0;
+  if (deleted) {
+    clearCacheByPrefix("dynamic-cms:");
+  }
+  return deleted;
 }
 
 
 export async function getPublicModuleItemBySlug(moduleName: string, slug: string): Promise<RowDataPacket | null> {
   await ensureDynamicCmsTables();
+  const cacheKey = `dynamic-cms:detail:${moduleName}:${slug}`;
+  return getOrSetCache(cacheKey, PUBLIC_DETAIL_CACHE_TTL_MS, async () => {
 
-  if (moduleName === "dealers") {
+    if (moduleName === "dealers") {
+      const [rows] = await getPool().query<RowDataPacket[]>(
+        "SELECT * FROM dealers WHERE slug = ? AND status = 'published' LIMIT 1",
+        [slug],
+      );
+      return rows[0] ?? null;
+    }
+
+    const moduleKey = safeModule(moduleName);
+    const table = MODULE_TABLES[moduleKey];
     const [rows] = await getPool().query<RowDataPacket[]>(
-      "SELECT * FROM dealers WHERE slug = ? AND status = 'published' LIMIT 1",
+      `SELECT * FROM ${table} WHERE slug = ? AND status = 'published' LIMIT 1`,
       [slug],
     );
+
     return rows[0] ?? null;
-  }
-
-  const moduleKey = safeModule(moduleName);
-  const table = MODULE_TABLES[moduleKey];
-  const [rows] = await getPool().query<RowDataPacket[]>(
-    `SELECT * FROM ${table} WHERE slug = ? AND status = 'published' LIMIT 1`,
-    [slug],
-  );
-
-  return rows[0] ?? null;
+  });
 }
