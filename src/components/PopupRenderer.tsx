@@ -36,19 +36,19 @@ export default function PopupRenderer() {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/60 p-4 flex items-center justify-center">
-      <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden">
-        <div className="relative h-52 w-full">
+      <div className="w-full max-w-5xl rounded-2xl bg-white shadow-2xl overflow-hidden">
+        <div className="relative w-full bg-black/90 flex items-center justify-center max-h-[75vh]">
           {isPdf ? (
             <iframe
               src={imageSrc}
               title={popup.title}
-              className="h-full w-full bg-white"
+              className="h-[75vh] w-full bg-white"
             />
           ) : (
             <img
               src={imageSrc}
               alt={popup.title}
-              className="h-full w-full object-cover"
+              className="max-h-[75vh] w-auto max-w-full object-contain"
               onError={() => setImageSrc("/image/certificate.jpg")}
             />
           )}
