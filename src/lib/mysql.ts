@@ -41,8 +41,10 @@ function buildPoolOptions(): PoolOptions {
     return {
       uri: mysqlUrl,
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit: 20,
       queueLimit: 0,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 0,
       ...(useSsl
         ? {
             ssl: {
@@ -72,8 +74,10 @@ function buildPoolOptions(): PoolOptions {
       defaultValue: 'u546576758_kaaveri',
     }),
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 20,
     queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
     ...(useSsl
       ? {
           ssl: {

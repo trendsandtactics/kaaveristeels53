@@ -52,7 +52,7 @@ export default function CertificationsPage() {
       setError("");
 
       const response = await fetch("/api/certifications", {
-        cache: "no-store",
+        cache: "force-cache",
       });
 
       const data = await readApiResponse(response);
