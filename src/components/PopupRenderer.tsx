@@ -18,7 +18,7 @@ export default function PopupRenderer() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/api/public/content/popups", { cache: "no-store" })
+    fetch("/api/public/content/popups?limit=1", { cache: "force-cache" })
       .then((res) => res.json())
       .then((data) => {
         const item = (data.data ?? [])[0];

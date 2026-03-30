@@ -1,5 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getPool } from "@/lib/mysql";
+import { clearCacheByPrefix, getOrSetCache } from "@/lib/server-cache";
 
 export type CertificationRecord = {
   id: number;
@@ -22,44 +23,59 @@ type CertificationRow = RowDataPacket & {
   mime_type: string;
   created_at: string;
 };
+const CERTIFICATIONS_LIST_CACHE_TTL_MS = 5 * 60 * 1000;
+let certificationsBootstrapPromise: Promise<void> | null = null;
 
 export async function ensureCertificationsTable(): Promise<void> {
-  await getPool().query(`
-    CREATE TABLE IF NOT EXISTS certifications (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      title VARCHAR(180) NOT NULL,
-      description TEXT NOT NULL,
-      issued_by VARCHAR(180) NOT NULL,
-      issue_date DATE NULL,
-      file_name VARCHAR(255) NOT NULL,
-      mime_type VARCHAR(120) NOT NULL,
-      file_data LONGBLOB NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-  `);
+  if (certificationsBootstrapPromise) {
+    return certificationsBootstrapPromise;
+  }
+
+  certificationsBootstrapPromise = getPool().query(`
+      CREATE TABLE IF NOT EXISTS certifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(180) NOT NULL,
+        description TEXT NOT NULL,
+        issued_by VARCHAR(180) NOT NULL,
+        issue_date DATE NULL,
+        file_name VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(120) NOT NULL,
+        file_data LONGBLOB NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `).then(() => undefined);
+
+  try {
+    await certificationsBootstrapPromise;
+  } catch (error) {
+    certificationsBootstrapPromise = null;
+    throw error;
+  }
 }
 
 export async function listCertifications(): Promise<CertificationRecord[]> {
   await ensureCertificationsTable();
-  const [rows] = await getPool().query<CertificationRow[]>(
-    `
-      SELECT id, title, description, issued_by, issue_date, file_name, mime_type, created_at
-      FROM certifications
-      ORDER BY issue_date DESC, created_at DESC
-    `,
-  );
+  return getOrSetCache("certifications:list", CERTIFICATIONS_LIST_CACHE_TTL_MS, async () => {
+    const [rows] = await getPool().query<CertificationRow[]>(
+      `
+        SELECT id, title, description, issued_by, issue_date, file_name, mime_type, created_at
+        FROM certifications
+        ORDER BY issue_date DESC, created_at DESC
+      `,
+    );
 
-  return rows.map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    issuedBy: row.issued_by,
-    issueDate: row.issue_date,
-    fileName: row.file_name,
-    mimeType: row.mime_type,
-    createdAt: row.created_at,
-  }));
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      issuedBy: row.issued_by,
+      issueDate: row.issue_date,
+      fileName: row.file_name,
+      mimeType: row.mime_type,
+      createdAt: row.created_at,
+    }));
+  });
 }
 
 export async function insertCertification(input: {
@@ -89,6 +105,7 @@ export async function insertCertification(input: {
     ],
   );
 
+  clearCacheByPrefix("certifications:");
   return result.insertId;
 }
 
@@ -118,5 +135,9 @@ export async function deleteCertification(id: number): Promise<boolean> {
     [id],
   );
 
-  return result.affectedRows > 0;
+  const deleted = result.affectedRows > 0;
+  if (deleted) {
+    clearCacheByPrefix("certifications:");
+  }
+  return deleted;
 }
