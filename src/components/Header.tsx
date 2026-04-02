@@ -59,16 +59,25 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  // ✅ FIXED LOGIC
   const transparent = pathname === "/" && !scrolled;
+
   const headerClass = transparent
     ? "bg-transparent py-6"
     : "bg-white shadow-sm py-4 border-b border-gray-200";
-  const currentLogo = isTransparentHeader ? "/logo.png" : "/logo3.png";
+
+  const currentLogo = transparent ? "/logo.png" : "/logo3.png";
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out ${headerClass}`}>
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out ${headerClass}`}
+    >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        <Link href="/" className="flex items-center z-50 transition-transform hover:scale-105">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center z-50 transition-transform hover:scale-105"
+        >
           <Image
             src={currentLogo}
             alt="Kaaveri TMT Bars & Structural"
@@ -79,6 +88,7 @@ export default function Header() {
           />
         </Link>
 
+        {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-5">
           {navLinks.map((link) => (
             <Link
@@ -94,6 +104,7 @@ export default function Header() {
             </Link>
           ))}
 
+          {/* Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
@@ -101,19 +112,33 @@ export default function Header() {
               aria-expanded={dropdownOpen}
               aria-haspopup="menu"
               className={`font-body text-[10px] uppercase tracking-[0.18em] font-semibold transition-colors ${
-                transparent ? "text-white/90 hover:text-white" : "text-black hover:text-accent-red"
+                transparent
+                  ? "text-white/90 hover:text-white"
+                  : "text-black hover:text-accent-red"
               }`}
             >
-              MEDIA & SUPPORT <span className={dropdownOpen ? "inline-block rotate-180" : "inline-block"}>▾</span>
+              MEDIA & SUPPORT{" "}
+              <span
+                className={
+                  dropdownOpen ? "inline-block rotate-180" : "inline-block"
+                }
+              >
+                ▾
+              </span>
             </button>
 
             <div
               role="menu"
-              className={`absolute right-0 top-full mt-1 w-[360px] max-h-[65vh] overflow-y-auto scroll-smooth bg-white border border-gray-200 shadow-[0_18px_40px_rgba(0,0,0,0.14)] p-4 rounded-md transition-all duration-200 ${
-                dropdownOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
+              className={`absolute right-0 top-full mt-1 w-[360px] max-h-[65vh] overflow-y-auto bg-white border border-gray-200 shadow-[0_18px_40px_rgba(0,0,0,0.14)] p-4 rounded-md transition-all duration-200 ${
+                dropdownOpen
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 -translate-y-1 pointer-events-none"
               }`}
             >
-              <p className="mb-3 px-1 text-[11px] font-bold tracking-[0.25em] uppercase text-black/50">Media & Support Pages</p>
+              <p className="mb-3 px-1 text-[11px] font-bold tracking-[0.25em] uppercase text-black/50">
+                Media & Support Pages
+              </p>
+
               <div className="flex flex-col">
                 {mediaSupportLinks.map((page, index) => (
                   <Link
@@ -121,7 +146,9 @@ export default function Header() {
                     href={page.href}
                     onClick={() => setDropdownOpen(false)}
                     className={`px-2 py-2 text-[15px] text-black hover:text-accent-red transition-colors ${
-                      index < mediaSupportLinks.length - 1 ? "border-b border-gray-100" : ""
+                      index < mediaSupportLinks.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
                     }`}
                   >
                     {page.name}
@@ -131,6 +158,7 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Careers */}
           <Link
             href="/careers"
             className={`font-body text-[10px] uppercase tracking-[0.18em] font-semibold pb-1 border-b-2 border-transparent transition-colors ${
@@ -142,25 +170,47 @@ export default function Header() {
             Careers
           </Link>
 
+          {/* CTA */}
           <Link
             href="/product-enquiry"
             className="ml-2 relative px-5 py-2.5 bg-accent-red text-white font-body text-[10px] uppercase tracking-[0.2em] font-bold overflow-hidden group border-2 border-accent-red"
           >
-            <span className="relative z-10 transition-colors duration-300 group-hover:text-accent-red">Request Quote</span>
+            <span className="relative z-10 transition-colors duration-300 group-hover:text-accent-red">
+              Request Quote
+            </span>
             <span className="absolute inset-0 bg-white transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0" />
           </Link>
         </nav>
 
+        {/* Mobile Button */}
         <button
-          className={`lg:hidden z-50 w-8 h-8 flex flex-col justify-center items-end gap-1 ${transparent ? "text-white" : "text-black"}`}
+          className={`lg:hidden z-50 w-8 h-8 flex flex-col justify-center items-end gap-1 ${
+            transparent ? "text-white" : "text-black"
+          }`}
           onClick={() => setMobileMenuOpen((prev) => !prev)}
-          aria-label="Toggle menu"
         >
-          <span className={`block h-[2px] ${transparent ? "bg-white" : "bg-black"} ${mobileMenuOpen ? "w-5 rotate-45 translate-y-[6px]" : "w-6"}`} />
-          <span className={`block h-[2px] ${transparent ? "bg-white" : "bg-black"} ${mobileMenuOpen ? "opacity-0 w-5" : "w-5"}`} />
-          <span className={`block h-[2px] ${transparent ? "bg-white" : "bg-black"} ${mobileMenuOpen ? "w-5 -rotate-45 -translate-y-[6px]" : "w-3"}`} />
+          <span
+            className={`block h-[2px] ${
+              transparent ? "bg-white" : "bg-black"
+            } ${mobileMenuOpen ? "w-5 rotate-45 translate-y-[6px]" : "w-6"}`}
+          />
+          <span
+            className={`block h-[2px] ${
+              transparent ? "bg-white" : "bg-black"
+            } ${mobileMenuOpen ? "opacity-0 w-5" : "w-5"}`}
+          />
+          <span
+            className={`block h-[2px] ${
+              transparent ? "bg-white" : "bg-black"
+            } ${
+              mobileMenuOpen
+                ? "w-5 -rotate-45 -translate-y-[6px]"
+                : "w-3"
+            }`}
+          />
         </button>
 
+        {/* Mobile Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -171,13 +221,24 @@ export default function Header() {
               className="fixed inset-0 bg-white/95 backdrop-blur-2xl z-40 flex flex-col items-center justify-center p-8"
             >
               <div className="w-full max-w-md space-y-6 max-h-[78vh] overflow-y-auto px-2">
-                {[{ title: "Main Pages", links: [...navLinks, { name: "Careers", href: "/careers" }] }, { title: "Media & Support", links: mediaSupportLinks }].map((category) => (
+                {[
+                  {
+                    title: "Main Pages",
+                    links: [...navLinks, { name: "Careers", href: "/careers" }],
+                  },
+                  {
+                    title: "Media & Support",
+                    links: mediaSupportLinks,
+                  },
+                ].map((category) => (
                   <div key={category.title} className="bg-white p-2">
-                    <p className="text-xs uppercase tracking-[0.2em] font-bold text-black/50 mb-3">{category.title}</p>
-                    <div className="grid grid-cols-1 gap-3">
+                    <p className="text-xs uppercase tracking-[0.2em] font-bold text-black/50 mb-3">
+                      {category.title}
+                    </p>
+                    <div className="grid gap-3">
                       {category.links.map((link) => (
                         <Link
-                          key={`${category.title}-${link.href}-${link.name}`}
+                          key={`${category.title}-${link.href}`}
                           href={link.href}
                           onClick={() => setMobileMenuOpen(false)}
                           className="text-lg text-black"
