@@ -63,13 +63,14 @@ export default function Header() {
   const headerClass = transparent
     ? "bg-transparent py-6"
     : "bg-white shadow-sm py-4 border-b border-gray-200";
+  const currentLogo = isTransparentHeader ? "/logo.png" : "/logo3.png";
 
   return (
     <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out ${headerClass}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         <Link href="/" className="flex items-center z-50 transition-transform hover:scale-105">
           <Image
-            src="/logo3.png"
+            src={currentLogo}
             alt="Kaaveri TMT Bars & Structural"
             width={200}
             height={56}
